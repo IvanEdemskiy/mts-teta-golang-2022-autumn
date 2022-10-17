@@ -1,36 +1,32 @@
 package main
 
 import (
-	"fmt"
-	"sort"
-	"strings"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"net/http"
 )
 
 func main() {
-	testString := "яЯАAAxctcbaaaaaaaaacbbbccccaa"
-	collapseString(testString)
+	// Echo instance
+	web := echo.New()
+
+	// Middleware
+	web.Use(middleware.Logger())
+	web.Use(middleware.Recover())
+
+	// Routes
+	//используем RPC style, не REST
+	web.POST("/findTickets", hello)   //поиск билетов по фильтрам
+	web.POST("/bookTicket", hello)    //бронирование билета
+	web.POST("/buyTicket", hello)     //оплата забронированного билета
+	web.POST("/cancelBooking", hello) //отмена бронирования
+	web.POST("/changeBooking", hello) //внесение изменений в бронирование
+
+	// Start server
+	web.Logger.Fatal(web.Start(":1323"))
 }
 
-func collapseString(testString string) {
-
-	fmt.Println(`Я бы воспользовался regexp backtracking("([a-zA-Zа-яА-Я])\1+"), но стандартная библиотека regexp такой функционал не поддерживает`)
-
-	asSymbols := strings.Split(testString, "")
-	counter := make(map[string]int)
-	sorted := make([]string, 0)
-	for _, v := range asSymbols {
-		if _, ok := counter[v]; !ok {
-			counter[v] = strings.Count(testString, v)
-			sorted = append(sorted, v)
-		}
-	}
-
-	sort.Strings(sorted)
-	var b strings.Builder
-	for _, v := range sorted {
-		b.WriteString(fmt.Sprintf("%s%d", v, counter[v]))
-	}
-	result := b.String()
-
-	fmt.Println(result)
+// Handler
+func hello(c echo.Context) error {
+	return c.String(http.StatusOK, "Hello, World!")
 }
